@@ -28,38 +28,6 @@
       flex-direction: column;
     }
 
-    /* Header */
-    header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    header .title-group h1 {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-    header .title-group p {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-top: 2px;
-    }
-    header .slide-counter {
-      font-size: 14px;
-      color: var(--text-secondary);
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-    }
-    header .slide-counter span {
-      font-weight: 700;
-      color: var(--accent);
-    }
 
     /* Main layout */
     main {
@@ -207,33 +175,6 @@
       background: var(--surface);
     }
 
-    /* Keyboard hint */
-    .keyboard-hint {
-      font-size: 12px;
-      color: var(--text-secondary);
-      text-align: center;
-    }
-    .kbd {
-      display: inline-block;
-      padding: 1px 6px;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      font-family: monospace;
-      font-size: 11px;
-      background: var(--surface);
-      color: var(--text-primary);
-    }
-
-    /* Footer */
-    footer {
-      text-align: center;
-      padding: 20px 16px;
-      font-size: 12px;
-      color: var(--text-secondary);
-      border-top: 1px solid var(--border);
-      background: var(--surface);
-    }
-
     /* Fullscreen overlay */
     .fullscreen-overlay {
       display: none;
@@ -307,14 +248,6 @@
 </head>
 <body>
 
-<header>
-  <div class="title-group">
-    <h1>AI活用の理解</h1>
-    <p>AIで何ができ、どのように考えるべきか</p>
-  </div>
-  <div class="slide-counter"><span id="headerCurrent">1</span> / 16</div>
-</header>
-
 <main>
   <!-- Slide viewer -->
   <div class="slide-viewer">
@@ -338,20 +271,11 @@
   <!-- Progress dots -->
   <div class="progress-dots" id="progressDots"></div>
 
-  <!-- Keyboard hint -->
-  <p class="keyboard-hint">
-    <span class="kbd">←</span> <span class="kbd">→</span> キーでスライド移動 &nbsp;|&nbsp; <span class="kbd">F</span> で全画面
-  </p>
-
   <!-- Thumbnail strip -->
   <div class="thumbnails">
     <div class="thumb-strip" id="thumbStrip"></div>
   </div>
 </main>
-
-<footer>
-  AI活用の理解 &mdash; 全16スライド
-</footer>
 
 <!-- Fullscreen overlay -->
 <div class="fullscreen-overlay" id="fullscreenOverlay">
@@ -382,7 +306,6 @@
   const nextBtn     = document.getElementById('nextBtn');
   const prevBtn2    = document.getElementById('prevBtn2');
   const nextBtn2    = document.getElementById('nextBtn2');
-  const headerCurr  = document.getElementById('headerCurrent');
   const dotsWrap    = document.getElementById('progressDots');
   const thumbStrip  = document.getElementById('thumbStrip');
   const fsOverlay   = document.getElementById('fullscreenOverlay');
@@ -438,7 +361,6 @@
 
     fsSlide.src = src;
     fsSlide.alt = label;
-    headerCurr.textContent = current + 1;
     fsCurr.textContent = current + 1;
 
     prevBtn.disabled  = current === 0;
