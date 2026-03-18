@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI活用の理解 — AIで何ができ、どのように考えるべきか</title>
+  <meta name="description" content="AIで何ができ、どのように考えるべきか。なぜ今AI活用が話題になるのか、現在のAIでできること、AI活用を進める際の基本的な考え方を解説します。">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f5f7;
+      --surface: #ffffff;
+      --text-primary: #1d2433;
+      --text-secondary: #6b7280;
+      --accent: #3b6cf6;
+      --border: #e5e7eb;
+      --shadow: 0 4px 24px rgba(0,0,0,0.10);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header .title-group h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    header .title-group p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    header .slide-counter {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    header .slide-counter span {
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* Main layout */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px;
+      gap: 24px;
+    }
+
+    /* Slide viewer */
+    .slide-viewer {
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .slide-stage {
+      position: relative;
+      background: var(--surface);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      aspect-ratio: 4/3;
+    }
+
+    .slide-stage img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      transition: opacity 0.25s ease;
+    }
+
+    .slide-stage img.fade-out { opacity: 0; }
+    .slide-stage img.fade-in  { opacity: 1; }
+
+    /* Nav arrows */
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      transition: background 0.15s, transform 0.15s;
+      z-index: 10;
+    }
+    .nav-btn:hover { background: white; transform: translateY(-50%) scale(1.08); }
+    .nav-btn:disabled { opacity: 0.3; cursor: default; }
+    .nav-btn:disabled:hover { transform: translateY(-50%) scale(1); }
+    .nav-btn.prev { left: 12px; }
+    .nav-btn.next { right: 12px; }
+    .nav-btn svg { width: 18px; height: 18px; stroke: var(--text-primary); }
+
+    /* Controls bar */
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .controls button {
+      padding: 8px 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-primary);
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .controls button:hover { background: var(--bg); }
+    .controls button.primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    .controls button.primary:hover { background: #2a56e4; }
+    .controls button:disabled { opacity: 0.4; cursor: default; }
+    .controls button:disabled:hover { background: var(--surface); }
+
+    /* Progress dots */
+    .progress-dots {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 900px;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      border: none;
+    }
+    .dot.active { background: var(--accent); transform: scale(1.4); }
+    .dot:hover:not(.active) { background: #9ca3af; }
+
+    /* Thumbnail strip */
+    .thumbnails {
+      width: 100%;
+      max-width: 900px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    .thumbnails::-webkit-scrollbar { height: 4px; }
+    .thumbnails::-webkit-scrollbar-track { background: transparent; }
+    .thumbnails::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .thumb-strip {
+      display: flex;
+      gap: 8px;
+      padding: 4px 0;
+    }
+    .thumb-item {
+      flex: 0 0 auto;
+      width: 120px;
+      cursor: pointer;
+      border-radius: 6px;
+      border: 2px solid transparent;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .thumb-item:hover { transform: translateY(-2px); }
+    .thumb-item.active { border-color: var(--accent); }
+    .thumb-item img { width: 100%; display: block; }
+    .thumb-item .thumb-num {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-secondary);
+      padding: 3px 0 4px;
+      background: var(--surface);
+    }
+
+    /* Keyboard hint */
+    .keyboard-hint {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    .kbd {
+      display: inline-block;
+      padding: 1px 6px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 11px;
+      background: var(--surface);
+      color: var(--text-primary);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 20px 16px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    /* Fullscreen overlay */
+    .fullscreen-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: black;
+      z-index: 1000;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .fullscreen-overlay.active { display: flex; }
+    .fullscreen-overlay img {
+      max-width: 100vw;
+      max-height: calc(100vh - 60px);
+      object-fit: contain;
+    }
+    .fullscreen-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+    .fullscreen-bar button {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.4);
+      color: white;
+      padding: 6px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .fullscreen-bar button:hover { background: rgba(255,255,255,0.15); }
+    .fullscreen-bar .fs-counter {
+      color: rgba(255,255,255,0.7);
+      font-size: 14px;
+      min-width: 80px;
+      text-align: center;
+    }
+    .fullscreen-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 48px;
+      height: 48px;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .fullscreen-nav:hover { background: rgba(255,255,255,0.3); }
+    .fullscreen-nav.prev { left: 16px; }
+    .fullscreen-nav.next { right: 16px; }
+    .fullscreen-nav svg { width: 20px; height: 20px; stroke: white; }
+
+    @media (max-width: 600px) {
+      header { padding: 12px 16px; }
+      header .title-group h1 { font-size: 15px; }
+      .thumb-item { width: 88px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="title-group">
+    <h1>AI活用の理解</h1>
+    <p>AIで何ができ、どのように考えるべきか</p>
+  </div>
+  <div class="slide-counter"><span id="headerCurrent">1</span> / 16</div>
+</header>
+
+<main>
+  <!-- Slide viewer -->
+  <div class="slide-viewer">
+    <div class="slide-stage">
+      <img id="mainSlide" src="slides/slide-001.png" alt="スライド 1">
+      <button class="nav-btn prev" id="prevBtn" disabled aria-label="前のスライド">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <button class="nav-btn next" id="nextBtn" aria-label="次のスライド">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+    <div class="controls">
+      <button id="prevBtn2" disabled>← 前へ</button>
+      <button class="primary" id="fullscreenBtn">全画面で見る</button>
+      <button id="nextBtn2">次へ →</button>
+    </div>
+  </div>
+
+  <!-- Progress dots -->
+  <div class="progress-dots" id="progressDots"></div>
+
+  <!-- Keyboard hint -->
+  <p class="keyboard-hint">
+    <span class="kbd">←</span> <span class="kbd">→</span> キーでスライド移動 &nbsp;|&nbsp; <span class="kbd">F</span> で全画面
+  </p>
+
+  <!-- Thumbnail strip -->
+  <div class="thumbnails">
+    <div class="thumb-strip" id="thumbStrip"></div>
+  </div>
+</main>
+
+<footer>
+  AI活用の理解 &mdash; 全16スライド
+</footer>
+
+<!-- Fullscreen overlay -->
+<div class="fullscreen-overlay" id="fullscreenOverlay">
+  <img id="fsSlide" src="slides/slide-001.png" alt="スライド 1">
+  <button class="fullscreen-nav prev" id="fsPrev" aria-label="前のスライド">
+    <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+  </button>
+  <button class="fullscreen-nav next" id="fsNext" aria-label="次のスライド">
+    <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+  </button>
+  <div class="fullscreen-bar">
+    <button id="fsPrevBar">← 前へ</button>
+    <span class="fs-counter"><span id="fsCounterCurrent">1</span> / 16</span>
+    <button id="fsNextBar">次へ →</button>
+    <button id="fsClose">✕ 閉じる</button>
+  </div>
+</div>
+
+<script>
+  const TOTAL = 16;
+  let current = 0; // 0-indexed
+
+  function padNum(n) { return String(n + 1).padStart(3, '0'); }
+  function slideSrc(n) { return `slides/slide-${padNum(n)}.png`; }
+
+  const mainSlide   = document.getElementById('mainSlide');
+  const prevBtn     = document.getElementById('prevBtn');
+  const nextBtn     = document.getElementById('nextBtn');
+  const prevBtn2    = document.getElementById('prevBtn2');
+  const nextBtn2    = document.getElementById('nextBtn2');
+  const headerCurr  = document.getElementById('headerCurrent');
+  const dotsWrap    = document.getElementById('progressDots');
+  const thumbStrip  = document.getElementById('thumbStrip');
+  const fsOverlay   = document.getElementById('fullscreenOverlay');
+  const fsSlide     = document.getElementById('fsSlide');
+  const fsCurr      = document.getElementById('fsCounterCurrent');
+
+  // Build dots
+  for (let i = 0; i < TOTAL; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'dot' + (i === 0 ? ' active' : '');
+    btn.setAttribute('aria-label', `スライド ${i+1}`);
+    btn.addEventListener('click', () => goTo(i));
+    dotsWrap.appendChild(btn);
+  }
+
+  // Build thumbnails
+  for (let i = 0; i < TOTAL; i++) {
+    const item = document.createElement('div');
+    item.className = 'thumb-item' + (i === 0 ? ' active' : '');
+    item.innerHTML = `<img src="${slideSrc(i)}" alt="スライド ${i+1}" loading="lazy"><div class="thumb-num">${i+1}</div>`;
+    item.addEventListener('click', () => goTo(i));
+    thumbStrip.appendChild(item);
+  }
+
+  // Preload adjacent slides
+  function preload(n) {
+    if (n >= 0 && n < TOTAL) { new Image().src = slideSrc(n); }
+  }
+
+  function goTo(n, skipAnim) {
+    if (n < 0 || n >= TOTAL || n === current) return;
+    current = n;
+    updateUI(skipAnim);
+    preload(n - 1);
+    preload(n + 1);
+  }
+
+  function updateUI(skipAnim) {
+    const src = slideSrc(current);
+    const label = `スライド ${current + 1}`;
+
+    if (skipAnim) {
+      mainSlide.src = src;
+      mainSlide.alt = label;
+    } else {
+      mainSlide.classList.add('fade-out');
+      setTimeout(() => {
+        mainSlide.src = src;
+        mainSlide.alt = label;
+        mainSlide.classList.remove('fade-out');
+      }, 120);
+    }
+
+    fsSlide.src = src;
+    fsSlide.alt = label;
+    headerCurr.textContent = current + 1;
+    fsCurr.textContent = current + 1;
+
+    prevBtn.disabled  = current === 0;
+    prevBtn2.disabled = current === 0;
+    nextBtn.disabled  = current === TOTAL - 1;
+    nextBtn2.disabled = current === TOTAL - 1;
+
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+    document.querySelectorAll('.thumb-item').forEach((t, i) => t.classList.toggle('active', i === current));
+
+    // Scroll active thumbnail into view
+    const activThumb = thumbStrip.children[current];
+    if (activThumb) activThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+
+  prevBtn.addEventListener('click',  () => goTo(current - 1));
+  nextBtn.addEventListener('click',  () => goTo(current + 1));
+  prevBtn2.addEventListener('click', () => goTo(current - 1));
+  nextBtn2.addEventListener('click', () => goTo(current + 1));
+
+  // Fullscreen
+  document.getElementById('fullscreenBtn').addEventListener('click', () => {
+    fsOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  });
+  document.getElementById('fsClose').addEventListener('click', closeFs);
+  function closeFs() {
+    fsOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('fsPrev').addEventListener('click',    () => goTo(current - 1));
+  document.getElementById('fsNext').addEventListener('click',    () => goTo(current + 1));
+  document.getElementById('fsPrevBar').addEventListener('click', () => goTo(current - 1));
+  document.getElementById('fsNextBar').addEventListener('click', () => goTo(current + 1));
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft')  goTo(current - 1);
+    if (e.key === 'ArrowRight') goTo(current + 1);
+    if (e.key === 'Escape') closeFs();
+    if (e.key === 'f' || e.key === 'F') {
+      if (fsOverlay.classList.contains('active')) closeFs();
+      else { fsOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+    }
+  });
+
+  // Touch swipe
+  let touchStartX = null;
+  function handleSwipeStart(e) { touchStartX = e.touches[0].clientX; }
+  function handleSwipeEnd(e) {
+    if (touchStartX === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 40) { dx < 0 ? goTo(current + 1) : goTo(current - 1); }
+    touchStartX = null;
+  }
+  document.getElementById('mainSlide').addEventListener('touchstart', handleSwipeStart, { passive: true });
+  document.getElementById('mainSlide').addEventListener('touchend',   handleSwipeEnd,   { passive: true });
+  fsSlide.addEventListener('touchstart', handleSwipeStart, { passive: true });
+  fsSlide.addEventListener('touchend',   handleSwipeEnd,   { passive: true });
+
+  // Preload first few slides
+  for (let i = 1; i <= 3; i++) preload(i);
+</script>
+</body>
+</html>
