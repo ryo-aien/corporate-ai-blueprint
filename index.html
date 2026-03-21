@@ -90,34 +90,6 @@
     .nav-btn.next { right: 12px; }
     .nav-btn svg { width: 18px; height: 18px; stroke: var(--text-primary); }
 
-    /* Controls bar */
-    .controls {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 16px;
-    }
-
-    .controls button {
-      padding: 8px 20px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text-primary);
-      font-size: 14px;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .controls button:hover { background: var(--bg); }
-    .controls button.primary {
-      background: var(--accent);
-      color: white;
-      border-color: var(--accent);
-    }
-    .controls button.primary:hover { background: #2a56e4; }
-    .controls button:disabled { opacity: 0.4; cursor: default; }
-    .controls button:disabled:hover { background: var(--surface); }
 
     /* Progress dots */
     .progress-dots {
@@ -261,11 +233,6 @@
       </button>
     </div>
 
-    <div class="controls">
-      <button id="prevBtn2" disabled>← 前へ</button>
-      <button class="primary" id="fullscreenBtn">全画面で見る</button>
-      <button id="nextBtn2">次へ →</button>
-    </div>
   </div>
 
   <!-- Progress dots -->
